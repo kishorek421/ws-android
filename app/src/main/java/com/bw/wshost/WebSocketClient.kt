@@ -3,6 +3,7 @@ package com.bw.wshost
 import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.http.HttpMethod
@@ -17,9 +18,11 @@ class WebSocketClient {
         install(WebSockets)
     }
 
-    fun connectWebSocket() {
+    private var session: DefaultClientWebSocketSession? = null
+
+    fun connectWebSocket(onMessageReceived: (String) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
-            client.webSocket(method = HttpMethod.Get, host = "10.0.2.2", port = 8080, path = "/ws") {
+            client.webSocket(method = HttpMethod.Get, host = "106.51.106.43", path = "/ws") {
                 Log.d("WebSocket", "Connected to the WebSocket server.")
 
                 send(Frame.Text("Hello from Android client!"))
@@ -29,6 +32,9 @@ class WebSocketClient {
                         is Frame.Text -> {
                             val receivedText = frame.readText()
                             Log.d("WebSocket", "Received: $receivedText")
+                            withContext(Dispatchers.Main) {
+                                onMessageReceived(receivedText)
+                            }
                         }
                         is Frame.Binary -> {
                             val receivedData = frame.readBytes()
@@ -46,6 +52,12 @@ class WebSocketClient {
                     }
                 }
             }
+        }
+    }
+
+    fun sendMessage(message: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            session?.send(Frame.Text(message))
         }
     }
 

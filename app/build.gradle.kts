@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.Packaging
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -40,7 +38,8 @@ android {
         resources.excludes.addAll(
             listOf(
                 "META-INF/INDEX.LIST",
-                "META-INF/io.netty.versions.properties"
+                "META-INF/io.netty.versions.properties",
+                "META-INF/native-image/org.mongodb/bson/native-image.properties"
             )
         )
     }
@@ -57,14 +56,18 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation(libs.ktor.server.core) // Use alias from the version catalog
-    implementation(libs.ktor.server.netty) // Use alias from the version catalog
-    implementation(libs.ktor.server.host.common) // Use alias from the version catalog
-    implementation(libs.ktor.server.websockets ) // Use alias from the version catalog
-    implementation(libs.ktor.client.core ) // Use alias from the version catalog
-    implementation(libs.ktor.client.okhttp ) // Use alias from the version catalog
-    implementation(libs.ktor.client.websockets ) // Use alias from the version catalog
-//    implementation(libs.logback) // Use alias from the version catalog
-    implementation(libs.kmongoCoroutine)
-    implementation(libs.kmongoAsync)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.host.common)
+    implementation(libs.ktor.server.websockets)
+    implementation(libs.ktor.server.html.builder)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.server.cio)
+
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.websockets)
+//    implementation(libs.logback)
+//    implementation(libs.kmongoCoroutine)
+//    implementation(libs.kmongoAsync)
 }

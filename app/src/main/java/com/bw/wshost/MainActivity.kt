@@ -14,6 +14,9 @@ import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -25,7 +28,10 @@ import java.lang.reflect.InvocationTargetException
 
 
 class MainActivity : AppCompatActivity() {
-    private val PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION = 1001
+//    private lateinit var webSocketClient: WebSocketClient
+//    private lateinit var messageInput: EditText
+//    private lateinit var sendButton: Button
+//    private lateinit var messageDisplay: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,101 +42,28 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        checkPermissions();
-    }
-
-    private fun checkPermissions() {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
-                PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION)
-        } else {
-            // Permissions are already granted
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                setupWifiHotspot()
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                // Permission granted
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    setupWifiHotspot()
-                }
-            } else {
-                // Permission denied
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun setupWifiHotspot() {
-        val wifiNetworkSpecifier = WifiNetworkSpecifier.Builder()
-            .setSsid("MyHotspot")
-            .setWpa2Passphrase("password123")
-            .build()
-        val networkRequest = NetworkRequest.Builder()
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .setNetworkSpecifier(wifiNetworkSpecifier)
-            .build()
-        val connectivityManager =
-            this.applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        connectivityManager.requestNetwork(networkRequest, NetworkCallback())
-
-//        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 //
-//        val wifiConfig = WifiConfiguration().apply {
-//            SSID = "MyHotspot"
-//            preSharedKey = "password123"
-//            allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK)
+//        messageInput = findViewById(R.id.messageInput)
+//        sendButton = findViewById(R.id.sendButton)
+//        messageDisplay = findViewById(R.id.messageDisplay)
+//
+//        webSocketClient = WebSocketClient()
+//        webSocketClient.connectWebSocket { message ->
+//            messageDisplay.append("\nServer: $message")
 //        }
-
-//        try {
-//            val method = wifiManager.javaClass.getMethod(
-//                "setWifiApEnabled",
-//                WifiConfiguration::class.java, Boolean::class.javaPrimitiveType
-//            )
-//            val success = method.invoke(wifiManager, wifiConfig, true) as Boolean
-//            if (success) {
-//                Log.d("Hotspot", "Hotspot created successfully")
-//            } else {
-//                Log.d("Hotspot", "Failed to create hotspot")
+//
+//        sendButton.setOnClickListener {
+//            val message = messageInput.text.toString()
+//            if (message.isNotEmpty()) {
+//                webSocketClient.sendMessage(message)
+//                messageDisplay.append("\nYou: $message")
+//                messageInput.text.clear()
 //            }
-//        } catch (e: NoSuchMethodException) {
-//            e.printStackTrace()
-//        } catch (e: IllegalAccessException) {
-//            e.printStackTrace()
-//        } catch (e: InvocationTargetException) {
-//            e.printStackTrace()
 //        }
     }
 
-
-    private fun setupNetworkRouting() {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        val request = NetworkRequest.Builder()
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build()
-
-        connectivityManager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                super.onAvailable(network)
-                connectivityManager.bindProcessToNetwork(network)
-                Log.d("Network", "Connected to network")
-            }
-
-            override fun onLost(network: Network) {
-                super.onLost(network)
-                connectivityManager.bindProcessToNetwork(null)
-                Log.d("Network", "Lost connection to network")
-            }
-        })
-    }
-
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        webSocketClient.disconnect()
+//    }
 }
