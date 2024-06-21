@@ -22,6 +22,7 @@ import io.ktor.websocket.readText
 import kotlinx.html.*
 import java.io.File
 import io.ktor.websocket.*
+import java.util.Collections
 import java.util.concurrent.atomic.*
 
 //import org.litote.kmongo.coroutine.CoroutineCollection
@@ -97,24 +98,42 @@ class ServerApplication : Application() {
 //                    val users = runBlocking { userCollection.find().toList() }
 //                    call.respond(users)
 //                }
+                val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
                 webSocket("/ws") { // this is the path for the WebSocket
 //                    send(Frame.Text("You are connected to the WebSocket server!"))
-
-                    for (frame in incoming) {
-                        when (frame) {
-                            is Frame.Text -> {
-                                val receivedText = frame.readText()
-                                outgoing(Frame.Text(receivedText))
-                            }
-                            is Frame.Binary -> {
-                                val receivedData = frame.readBytes()
-                                send(Frame.Text("Server received binary data of size: ${receivedData.size}"))
-                            }
-                            else -> {
-                                send(Frame.Text("Unsupported frame type received"))
+                    val thisConnection = Connection(this)
+                    connections += thisConnection
+                    try {
+                        send("You are connected! There are ${connections.count()} users here.")
+                        for (frame in incoming) {
+                            frame as? Frame.Text ?: continue
+                            val receivedText = frame.readText()
+                            val textWithUsername = "[${thisConnection.name}]: $receivedText"
+                            connections.forEach {
+                                it.session.send(textWithUsername)
                             }
                         }
+                    } catch (e: Exception) {
+                        println(e.localizedMessage)
+                    } finally {
+                        println("Removing $thisConnection!")
+                        connections -= thisConnection
                     }
+//                    for (frame in incoming) {
+//                        when (frame) {
+//                            is Frame.Text -> {
+//                                val receivedText = frame.readText()
+//                                outgoing(Frame.Text(receivedText))
+//                            }
+//                            is Frame.Binary -> {
+//                                val receivedData = frame.readBytes()
+//                                send(Frame.Text("Server received binary data of size: ${receivedData.size}"))
+//                            }
+//                            else -> {
+//                                send(Frame.Text("Unsupported frame type received"))
+//                            }
+//                        }
+//                    }
                 }
             }
         }.start(wait = false)
